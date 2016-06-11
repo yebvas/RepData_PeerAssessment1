@@ -1,0 +1,119 @@
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+---
+
+
+## Loading and preprocessing the data
+
+```{r Load.Data}
+if(!file.exists('activity.csv')){
+        download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip")
+        unzip('activeity.zip')
+}
+activity.data <- read.csv("activity.csv")
+```
+
+Load Libraries
+
+```{R libraries, results = 'hide'}
+library(dplyr)
+library(Hmisc)
+library(ggplot2)
+```
+
+## What is mean total number of steps taken per day?
+
+Create daily total steps
+
+```{R Aggregate}
+Total.Steps <- aggregate(activity.data$steps, by = list(activity.data$date), FUN = "sum", na.rm = TRUE)
+```
+
+Plot Histogram of the total steps taken each day
+
+```{R Hist.Steps.Per.Day}
+hist(Total.Steps$x, main = "Histogram of Total Steps Per Day", xlab = "Total Steps Per Day", col = "blue")
+```
+
+Mean total steps per day
+
+```{R mean.steps}
+mean(Total.Steps$x)
+```
+
+Median total steps per day
+
+```{R median.steps}
+median(Total.Steps$x)
+```
+
+## What is the average daily activity pattern?
+
+Daily Activity Pattern
+  (This plot breaks when knitted)
+
+```{R Interval.Steps}
+Mean.Interval.Steps <- group_by(activity.data, interval)
+plot(Mean.Interval.Steps$interval, Mean.Interval.Steps$average, type = "l", col = "blue", lwd = 2, main = "Time Series: Average Steps", xlab = "5 Minute Intervals", ylab = "Average Steps")
+```
+
+Interval with the maximum average of steps
+
+```{R Max.steps}
+max.int <- which.max(Mean.Interval.Steps$steps)
+Mean.Interval.Steps[max.int,"interval"]
+```
+
+## Imputing missing values
+
+Total number of missing values
+
+```{R NAs}
+sum(is.na(activity.data$steps))
+```
+
+The missing data will be imputed using the impute function from the Hmisc package
+
+```{R new.data}
+Imputed.Activity.Data <- activity.data
+Imputed.Activity.Data$steps <- impute(activity.data$steps, fun = mean)
+```
+
+```{R Aggregate.Imputed}
+Total.Imputed.Steps <- aggregate(Imputed.Activity.Data$steps, by = list(Imputed.Activity.Data$date), FUN = "sum")
+```
+
+Plot Histogram of the total steps, with imputed steps, taken each day
+
+```{R Hist.Steps.Per.Day.Imputed}
+hist(Total.Imputed.Steps$x, main = "Histogram of Total Steps, with Imputed Steps, Per Day", xlab = "Total Steps Per Day", col = "red")
+```
+
+Mean total steps with imputed steps, per day
+
+```{R mean.steps.imputed}
+mean(Total.Imputed.Steps$x)
+```
+
+Median total steps with imputed steps, per day
+
+```{R median.steps.imputed}
+median(Total.Imputed.Steps$x)
+```
+
+## Are there differences in activity patterns between weekdays and weekends?
+
+```{R Daytype}
+Imputed.Activity.Data$Weekday <- weekdays(as.Date(Imputed.Activity.Data$date), abbreviate = FALSE)
+Imputed.Activity.Data$day.type <- ifelse(Imputed.Activity.Data$Weekday %in% c("Saturday", "Sunday"), 'Weekend', 'Weekday')
+```
+
+Daily Activity Pattern by Day Type
+
+```{R Activity.By.Day.Type}
+Day.Type.Steps <- aggregate(steps ~ interval + day.type, data = Imputed.Activity.Data, mean)
+qplot(interval, steps, data = Day.Type.Steps, facets = day.type ~., main = "Time Series: Average Steps by Day Type")+geom_line()
+```
