@@ -16,27 +16,6 @@ Load Libraries
 
 
 ```r
-library(dplyr)
-```
-
-```
-## 
-## Attaching package: 'dplyr'
-```
-
-```
-## The following objects are masked from 'package:stats':
-## 
-##     filter, lag
-```
-
-```
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
-
-```r
 library(Hmisc)
 ```
 
@@ -59,12 +38,6 @@ library(Hmisc)
 ```
 ## 
 ## Attaching package: 'Hmisc'
-```
-
-```
-## The following objects are masked from 'package:dplyr':
-## 
-##     combine, src, summarize
 ```
 
 ```
@@ -124,8 +97,8 @@ Daily Activity Pattern
 
 
 ```r
-Mean.Interval.Steps <- group_by(activity.data, interval)
-plot(Mean.Interval.Steps$interval, Mean.Interval.Steps$average, type = "l", col = "blue", lwd = 2, main = "Time Series: Average Steps", xlab = "5 Minute Intervals", ylab = "Average Steps")
+Mean.Interval.Steps <- aggregate(activity.data$steps, by = list(activity.data$interval), FUN = "mean", na.rm = TRUE)
+plot(Mean.Interval.Steps$Group.1, Mean.Interval.Steps$x, type = "l", col = "blue", lwd = 2, main = "Time Series: Average Steps", xlab = "5 Minute Intervals", ylab = "Average Steps")
 ```
 
 ![](PA1_Assignment1_files/figure-html/Interval.Steps-1.png)<!-- -->
@@ -134,17 +107,12 @@ Interval with the maximum average of steps
 
 
 ```r
-max.int <- which.max(Mean.Interval.Steps$steps)
-Mean.Interval.Steps[max.int,"interval"]
+max.int <- which.max(Mean.Interval.Steps$x)
+Mean.Interval.Steps[max.int, "Group.1"]
 ```
 
 ```
-## Source: local data frame [1 x 1]
-## Groups: interval [1]
-## 
-##   interval
-##      (int)
-## 1      615
+## [1] 835
 ```
 
 ## Imputing missing values
@@ -217,7 +185,7 @@ Daily Activity Pattern by Day Type
 
 ```r
 Day.Type.Steps <- aggregate(steps ~ interval + day.type, data = Imputed.Activity.Data, mean)
-qplot(interval, steps, data = Day.Type.Steps, facets = day.type ~., main = "Time Series: Average Steps by Day Type")+geom_line()
+qplot(interval, steps, data = Day.Type.Steps, facets = day.type ~., geom = "line", color = "red", main = "Time Series: Average Steps by Day Type") + geom_line(size = 1.5)
 ```
 
 ![](PA1_Assignment1_files/figure-html/Activity.By.Day.Type-1.png)<!-- -->

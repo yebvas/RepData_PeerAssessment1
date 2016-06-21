@@ -19,7 +19,6 @@ activity.data <- read.csv("activity.csv")
 Load Libraries
 
 ```{R libraries, results = 'hide'}
-library(dplyr)
 library(Hmisc)
 library(ggplot2)
 ```
@@ -56,15 +55,15 @@ Daily Activity Pattern
   (This plot breaks when knitted)
 
 ```{R Interval.Steps}
-Mean.Interval.Steps <- group_by(activity.data, interval)
-plot(Mean.Interval.Steps$interval, Mean.Interval.Steps$average, type = "l", col = "blue", lwd = 2, main = "Time Series: Average Steps", xlab = "5 Minute Intervals", ylab = "Average Steps")
+Mean.Interval.Steps <- aggregate(activity.data$steps, by = list(activity.data$interval), FUN = "mean", na.rm = TRUE)
+plot(Mean.Interval.Steps$Group.1, Mean.Interval.Steps$x, type = "l", col = "blue", lwd = 2, main = "Time Series: Average Steps", xlab = "5 Minute Intervals", ylab = "Average Steps")
 ```
 
 Interval with the maximum average of steps
 
 ```{R Max.steps}
-max.int <- which.max(Mean.Interval.Steps$steps)
-Mean.Interval.Steps[max.int,"interval"]
+max.int <- which.max(Mean.Interval.Steps$x)
+Mean.Interval.Steps[max.int, "Group.1"]
 ```
 
 ## Imputing missing values
@@ -115,5 +114,5 @@ Daily Activity Pattern by Day Type
 
 ```{R Activity.By.Day.Type}
 Day.Type.Steps <- aggregate(steps ~ interval + day.type, data = Imputed.Activity.Data, mean)
-qplot(interval, steps, data = Day.Type.Steps, facets = day.type ~., main = "Time Series: Average Steps by Day Type")+geom_line()
+qplot(interval, steps, data = Day.Type.Steps, facets = day.type ~., geom = "line", color = "red", main = "Time Series: Average Steps by Day Type") + geom_line(size = 1.5)
 ```
